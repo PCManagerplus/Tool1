@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>blueSky Premium Clock</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+<style>
+  /* フォントの変更 */
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  /* ボタンスタイルの変更 */
+  button {
+    font-size: 1em;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #028577; /* ボタンの背景色を変更 */
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #005d4d; /* ホバー時の背景色を変更 */
+  }
+
+  button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  /* タイマーやストップウォッチの表示スタイル */
+  .clock-container {
+    font-size: 2.5em;
+    font-weight: bold;
+    transition: font-size 0.3s ease;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .clock-container:hover {
+    font-size: 3em;
+  }
+
+  .timer-display,
+  .stopwatch-display {
+    font-size: 1.6em;
+    margin-top: 10px;
+    transition: font-size 0.3s ease;
+    color: #666;
+  }
+
+  .timer-display:hover,
+  .stopwatch-display:hover {
+    font-size: 1.8em;
+  }
+
+  .controls {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .time-input {
+    width: 50px;
+    text-align: center;
+    margin-right: 10px;
+    font-size: 1.2em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+  }
+
+  .time-input:focus {
+    outline: none;
+    border-color: #66afe9;
+  }
+
+  /* Materialize CSSの波アニメーションの速度調整 */
+  .waves-effect {
+    transition-duration: 0.3s;
+  }
+
+  /* ポップアップのスタイル */
+  .popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .popup-content {
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="clock" class="clock-container">
+  <div class="time"></div>
+  <div class="date"></div>
+</div>
+<div class="timer-display" id="timerDisplay">タイマー: 00:00:00</div>
+<div class="controls">
+  <input type="number" id="timerHours" class="time-input" min="0" placeholder="時">
+  <input type="number" id="timerMinutes" class="time-input" min="0" max="59" placeholder="分">
+  <input type="number" id="timerSeconds" class="time-input" min="0" max="59" placeholder="秒">
+  <button id="setTimerBtn" class="btn waves-effect waves-light">タイマー設定</button>
+  <button id="startTimerBtn" class="btn waves-effect waves-light" disabled>タイマー開始</button>
+  <button id="stopTimerBtn" class="btn waves-effect waves-light" disabled>タイマー停止</button>
+  <button id="stopAlarmBtn" class="btn waves-effect waves-light" style="display: none;">アラーム停止</button>
+</div>
+<div class="stopwatch-display" id="stopwatchDisplay">ストップウォッチ: 00:00:00.00</div>
+<div class="controls">
+  <button id="startStopwatchBtn" class="btn waves-effect waves-light">ストップウォッチ開始</button>
+  <button id="stopStopwatchBtn" class="btn waves-effect waves-light">ストップウォッチ停止</button>
+  <button id="resetStopwatchBtn" class="btn waves-effect waves-light">ストップウォッチリセット</button>
+</div>
+<div class="controls">
+  <select id="alarmSelect" class="browser-default">
+    <option value="https://github.com/PCManagerplus/media.web/raw/main/%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.wav">デフォルト音声</option>
+    <option value="https://github.com/PCManagerplus/media.web/raw/main/Unknown%20artist%20-%20Timer_Expire.m4a">Google旧</option>
+    <option value="https://github.com/PCManagerplus/media.web/raw/main/Unknown%20artist%20-%20Oz.m4a">Google新</option>
+    <option value="no.file.mp3">今後、追加予定</option>
+  </select>
+  <button id="changeAlarmBtn" class="btn waves-effect waves-light">音声変更</button>
+</div>
+<audio id="alarmSound" src="https://github.com/PCManagerplus/media.web/raw/main/%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.wav" loop></audio>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script>
+  const clockContainer = document.querySelector('.clock-container');
+  const timerHoursInput = document.getElementById('timerHours');
+  const timerMinutesInput = document.getElementById('timerMinutes');
+  const timerSecondsInput = document.getElementById('timerSeconds');
+  const setTimerBtn = document.getElementById('setTimerBtn');
+  const startTimerBtn = document.getElementById('startTimerBtn');
+  const stopTimerBtn = document.getElementById('stopTimerBtn');
+  const stopAlarmBtn = document.getElementById('stopAlarmBtn');
+  const timerDisplay = document.getElementById('timerDisplay');
+  const stopwatchDisplay = document.getElementById('stopwatchDisplay');
+  const startStopwatchBtn = document.getElementById('startStopwatchBtn');
+  const stopStopwatchBtn = document.getElementById('stopStopwatchBtn');
+  const resetStopwatchBtn = document.getElementById('resetStopwatchBtn');
+  const alarmSelect = document.getElementById('alarmSelect');
+  const changeAlarmBtn = document.getElementById('changeAlarmBtn');
+  const alarmSound = document.getElementById('alarmSound');
+
+  let timerInterval;
+  let timerSeconds = 0;
+  let timerRunning = false;
+
+  let stopwatchInterval;
+  let stopwatchMilliseconds = 0;
+  let stopwatchRunning = false;
+
+  function formatTimerTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+  }
+
+  function formatStopwatchTime(milliseconds) {
+    const minutes = Math.floor(milliseconds / (60 * 100));
+    const seconds = Math.floor((milliseconds % (60 * 100)) / 100);
+    const centiseconds = milliseconds % 100;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`;
+  }
+
+  setTimerBtn.addEventListener('click', () => {
+    const hours = parseInt(timerHoursInput.value);
+    const minutes = parseInt(timerMinutesInput.value);
+    const seconds = parseInt(timerSecondsInput.value);
+    if (isNaN(hours) || isNaN(minutes) || isNaN(seconds) || hours < 0 || minutes < 0 || seconds < 0) {
+      alert('正しい時間を入力してください。');
+      return;
+    }
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+    if (totalSeconds === 0) {
+      alert('時間を入力してください。');
+      return;
+    }
+    timerSeconds = totalSeconds;
+    timerDisplay.textContent = `タイマー: ${formatTimerTime(timerSeconds)}`;
+    startTimerBtn.disabled = false;
+    stopTimerBtn.disabled = false;
+  });
+
+  startTimerBtn.addEventListener('click', () => {
+    if (timerRunning) {
+      return;
+    }
+    timerInterval = setInterval(() => {
+      timerSeconds--;
+      timerDisplay.textContent = `タイマー: ${formatTimerTime(timerSeconds)}`;
+      if (timerSeconds === 0) {
+        clearInterval(timerInterval);
+        alarmSound.play();
+        stopAlarmBtn.style.display = 'inline-block';
+        timerRunning = false;
+        startTimerBtn.disabled = true;
+        stopTimerBtn.disabled = true;
+
+        // タイマー完了のポップアップメッセージを表示
+        const confirmationPopup = document.createElement('div');
+        confirmationPopup.className = 'popup';
+        confirmationPopup.innerHTML = `
+          <div class="popup-content">
+            <p>タイマーが完了しました。</p>
+            <button id="okButton" class="btn waves-effect waves-light">OK</button>
+          </div>
+        `;
+        document.body.appendChild(confirmationPopup);
+
+        // OKボタンをクリックしたらポップアップを閉じる
+        const okButton = confirmationPopup.querySelector('#okButton');
+        okButton.addEventListener('click', () => {
+          document.body.removeChild(confirmationPopup);
+        });
+      }
+    }, 1000);
+    timerRunning = true;
+  });
+
+  stopTimerBtn.addEventListener('click', () => {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    alarmSound.pause();
+    alarmSound.currentTime = 0;
+  });
+
+  stopAlarmBtn.addEventListener('click', () => {
+    alarmSound.pause();
+    alarmSound.currentTime = 0;
+    stopAlarmBtn.style.display = 'none';
+  });
+
+  startStopwatchBtn.addEventListener('click', () => {
+    if (stopwatchRunning) {
+      clearInterval(stopwatchInterval);
+    }
+    stopwatchInterval = setInterval(() => {
+      stopwatchMilliseconds++;
+      stopwatchDisplay.textContent = `ストップウォッチ: ${formatStopwatchTime(stopwatchMilliseconds)}`;
+    }, 10);
+    stopwatchRunning = true;
+  });
+
+  stopStopwatchBtn.addEventListener('click', () => {
+    clearInterval(stopwatchInterval);
+    stopwatchRunning = false;
+  });
+
+  resetStopwatchBtn.addEventListener('click', () => {
+    clearInterval(stopwatchInterval);
+    stopwatchRunning = false;
+    stopwatchMilliseconds = 0;
+    stopwatchDisplay.textContent = 'ストップウォッチ: 00:00:00.00';
+  });
+
+  changeAlarmBtn.addEventListener('click', () => {
+    const selectedAlarm = alarmSelect.value;
+    alarmSound.src = selectedAlarm;
+    alert('アラーム音声が変更されました。');
+  });
+
+  function updateClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const timeString = `${hours}:${minutes}:${seconds}`;
+    clockContainer.querySelector('.time').textContent = timeString;
+
+    const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateString = now.toLocaleDateString('ja-JP', dateOptions);
+    clockContainer.querySelector('.date').textContent = dateString;
+  }
+
+  setInterval(updateClock, 1000);
+</script>
+</body>
+</html>
