@@ -116,21 +116,9 @@
 </div>
 <div class="timer-display" id="timerDisplay">タイマー: 00:00:00</div>
 <div class="controls">
-  <select id="timerHours" class="time-select">
-    <option value="0">時</option>
-    <!-- 0～23時のオプションを追加 -->
-    ${[...Array(24).keys()].map(i => `<option value="${i}">${i}</option>`).join('')}
-  </select>
-  <select id="timerMinutes" class="time-select">
-    <option value="0">分</option>
-    <!-- 0～59分のオプションを追加 -->
-    ${[...Array(60).keys()].map(i => `<option value="${i}">${i}</option>`).join('')}
-  </select>
-  <select id="timerSeconds" class="time-select">
-    <option value="0">秒</option>
-    <!-- 0～59秒のオプションを追加 -->
-    ${[...Array(60).keys()].map(i => `<option value="${i}">${i}</option>`).join('')}
-  </select>
+  <select id="timerHours" class="time-select"></select>
+  <select id="timerMinutes" class="time-select"></select>
+  <select id="timerSeconds" class="time-select"></select>
   <button id="setTimerBtn" class="btn waves-effect waves-light">タイマー設定</button>
   <button id="startTimerBtn" class="btn waves-effect waves-light" disabled>タイマー開始</button>
   <button id="stopTimerBtn" class="btn waves-effect waves-light" disabled>タイマー停止</button>
@@ -200,6 +188,19 @@
     const centiseconds = milliseconds % 100;
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`;
   }
+
+  function populateTimeSelect(selectElement, max) {
+    for (let i = 0; i <= max; i++) {
+      const option = document.createElement('option');
+      option.value = i;
+      option.text = String(i).padStart(2, '0');
+      selectElement.appendChild(option);
+    }
+  }
+
+  populateTimeSelect(timerHoursSelect, 23);
+  populateTimeSelect(timerMinutesSelect, 59);
+  populateTimeSelect(timerSecondsSelect, 59);
 
   setTimerBtn.addEventListener('click', () => {
     const hours = parseInt(timerHoursSelect.value);
