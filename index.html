@@ -6,6 +6,7 @@
 <title>Sou Clock</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 <style>
+  /* フォントの変更 */
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f0f0f0;
@@ -18,19 +19,20 @@
     height: 100vh;
   }
 
+  /* ボタンスタイルの変更 */
   button {
     font-size: 1em;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
-    background-color: #028577;
+    background-color: #028577; /* ボタンの背景色を変更 */
     color: #fff;
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
 
   button:hover {
-    background-color: #005d4d;
+    background-color: #005d4d; /* ホバー時の背景色を変更 */
   }
 
   button:disabled {
@@ -38,6 +40,7 @@
     cursor: not-allowed;
   }
 
+  /* タイマーやストップウォッチの表示スタイル */
   .clock-container {
     font-size: 2.5em;
     font-weight: bold;
@@ -69,8 +72,8 @@
     text-align: center;
   }
 
-  .time-input {
-    width: 50px;
+  .time-select {
+    width: 80px;
     text-align: center;
     margin-right: 10px;
     font-size: 1.2em;
@@ -79,16 +82,17 @@
     padding: 5px;
   }
 
-  .time-input:focus {
+  .time-select:focus {
     outline: none;
     border-color: #66afe9;
   }
 
+  /* Materialize CSSの波アニメーションの速度調整 */
   .waves-effect {
-    position: relative;
-    overflow: hidden;
+    transition-duration: 0.3s;
   }
 
+  /* ポップアップのスタイル */
   .popup {
     position: fixed;
     top: 50%;
@@ -112,9 +116,21 @@
 </div>
 <div class="timer-display" id="timerDisplay">タイマー: 00:00:00</div>
 <div class="controls">
-  <input type="number" id="timerHours" class="time-input" min="0" placeholder="時">
-  <input type="number" id="timerMinutes" class="time-input" min="0" max="59" placeholder="分">
-  <input type="number" id="timerSeconds" class="time-input" min="0" max="59" placeholder="秒">
+  <select id="timerHours" class="time-select">
+    <option value="0">時</option>
+    <!-- 0～23時のオプションを追加 -->
+    ${[...Array(24).keys()].map(i => `<option value="${i}">${i}</option>`).join('')}
+  </select>
+  <select id="timerMinutes" class="time-select">
+    <option value="0">分</option>
+    <!-- 0～59分のオプションを追加 -->
+    ${[...Array(60).keys()].map(i => `<option value="${i}">${i}</option>`).join('')}
+  </select>
+  <select id="timerSeconds" class="time-select">
+    <option value="0">秒</option>
+    <!-- 0～59秒のオプションを追加 -->
+    ${[...Array(60).keys()].map(i => `<option value="${i}">${i}</option>`).join('')}
+  </select>
   <button id="setTimerBtn" class="btn waves-effect waves-light">タイマー設定</button>
   <button id="startTimerBtn" class="btn waves-effect waves-light" disabled>タイマー開始</button>
   <button id="stopTimerBtn" class="btn waves-effect waves-light" disabled>タイマー停止</button>
@@ -139,7 +155,7 @@
     <option value="https://github.com/PCManagerplus/media.web/raw/main/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%82%A6%E3%82%A8%E3%82%B9%E3%83%88%E3%83%9F%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC-%E7%9F%AD%E3%81%84.mp3">学校のチャイム(短い)</option>
     <option value="https://github.com/PCManagerplus/media.web/raw/main/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%82%A2%E3%83%9E%E3%83%AA%E3%83%AA%E3%82%B9.mp3">アマリリス</option>
     <option value="https://github.com/PCManagerplus/media.web/raw/main/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E5%B3%A0%E3%81%AE%E6%88%91%E3%81%8C%E5%AE%B6.mp3">峠の我が家</option>
-    <option value="https://github.com/PCManagerplus/media.web/raw/main/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%82%A2%E3%83%8B%E3%83%BC%E3%83%AD%E3%83%BC%E3%83%AA%E3%83%BC.mp3">アニーローリー</option>
+    <option value="https://github.com/PCManagerplus/media.web/raw/main/%E5%AE%89%E5%BA%97%E3%82%BB%E3%83%96%E3%83%B3/%E3%83%99%E3%83%AB%E3%81%AE%E9%9F%B3.mp3">ベルの音</option>
     <option value="https://github.com/PCManagerplus/media.web/raw/main/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%81%BB%E3%81%9F%E3%82%8B%E3%81%AE%E5%85%89.mp3">蛍の光</option>
     <option value="no.file.mp3">今後、追加予定</option>
   </select>
@@ -148,9 +164,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 <script>
   const clockContainer = document.querySelector('.clock-container');
-  const timerHoursInput = document.getElementById('timerHours');
-  const timerMinutesInput = document.getElementById('timerMinutes');
-  const timerSecondsInput = document.getElementById('timerSeconds');
+  const timerHoursSelect = document.getElementById('timerHours');
+  const timerMinutesSelect = document.getElementById('timerMinutes');
+  const timerSecondsSelect = document.getElementById('timerSeconds');
   const setTimerBtn = document.getElementById('setTimerBtn');
   const startTimerBtn = document.getElementById('startTimerBtn');
   const stopTimerBtn = document.getElementById('stopTimerBtn');
@@ -186,9 +202,9 @@
   }
 
   setTimerBtn.addEventListener('click', () => {
-    const hours = parseInt(timerHoursInput.value);
-    const minutes = parseInt(timerMinutesInput.value);
-    const seconds = parseInt(timerSecondsInput.value);
+    const hours = parseInt(timerHoursSelect.value);
+    const minutes = parseInt(timerMinutesSelect.value);
+    const seconds = parseInt(timerSecondsSelect.value);
     if (isNaN(hours) || isNaN(minutes) || isNaN(seconds) || hours < 0 || minutes < 0 || seconds < 0) {
       alert('正しい時間を入力してください。');
       return;
