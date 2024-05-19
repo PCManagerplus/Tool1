@@ -147,7 +147,6 @@
     <option value="https://github.com/PCManagerplus/media.web/raw/main/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%81%BB%E3%81%9F%E3%82%8B%E3%81%AE%E5%85%89.mp3">蛍の光</option>
     <option value="no.file.mp3">今後、追加予定</option>
   </select>
-  <button id="changeAlarmBtn" class="btn waves-effect waves-light">音声変更</button>
 </div>
 <audio id="alarmSound" src="https://github.com/PCManagerplus/media.web/raw/main/%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.wav" loop></audio>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
@@ -166,7 +165,6 @@
   const stopStopwatchBtn = document.getElementById('stopStopwatchBtn');
   const resetStopwatchBtn = document.getElementById('resetStopwatchBtn');
   const alarmSelect = document.getElementById('alarmSelect');
-  const changeAlarmBtn = document.getElementById('changeAlarmBtn');
   const alarmSound = document.getElementById('alarmSound');
 
   let timerInterval;
@@ -282,7 +280,7 @@
     stopwatchDisplay.textContent = 'ストップウォッチ: 00:00:00.00';
   });
 
-  changeAlarmBtn.addEventListener('click', () => {
+  alarmSelect.addEventListener('change', () => {
     const selectedAlarm = alarmSelect.value;
     alarmSound.src = selectedAlarm;
     alert('アラーム音声が変更されました。');
