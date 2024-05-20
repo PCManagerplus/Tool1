@@ -222,23 +222,6 @@
         timerRunning = false;
         startTimerBtn.disabled = true;
         stopTimerBtn.disabled = true;
-
-        // タイマー完了のポップアップメッセージを表示
-        const confirmationPopup = document.createElement('div');
-        confirmationPopup.className = 'popup';
-        confirmationPopup.innerHTML = `
-          <div class="popup-content">
-            <p>タイマーが完了しました。</p>
-            <button id="okButton" class="btn waves-effect waves-light">OK</button>
-          </div>
-        `;
-        document.body.appendChild(confirmationPopup);
-
-        // OKボタンをクリックしたらポップアップを閉じる
-        const okButton = confirmationPopup.querySelector('#okButton');
-        okButton.addEventListener('click', () => {
-          document.body.removeChild(confirmationPopup);
-        });
       }
     }, 1000);
     timerRunning = true;
