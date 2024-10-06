@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sou Clock - タイマー</title>
+    <link rel="stylesheet" href="./Sou Clock_files/materialize.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        button {
+            font-size: 1em;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #028577;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #005d4d;
+        }
+
+        .timer-display {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .time-input {
+            width: 80px; /* サイズを大きく */
+            text-align: center;
+            margin-right: 10px;
+            font-size: 2em; /* フォントサイズを大きく */
+        }
+    </style>
+</head>
+<body>
+
+<div class="timer-display" id="timerDisplay">タイマー: 00:00:00</div>
+<div class="controls">
+    <input type="number" id="timerHours" class="time-input" min="0" placeholder="時">
+    <input type="number" id="timerMinutes" class="time-input" min="0" max="59" placeholder="分">
+    <input type="number" id="timerSeconds" class="time-input" min="0" max="59" placeholder="秒">
+    <button id="setTimerBtn" class="btn">タイマー設定</button>
+    <button id="startTimerBtn" class="btn" disabled>タイマー開始</button>
+    <button id="stopTimerBtn" class="btn" disabled>タイマー停止</button>
+    <button id="stopAlarmBtn" class="btn" style="display: none;">アラーム停止</button>
+</div>
+
+<div class="controls">
+    <select id="alarmSelect" class="browser-default">
+        <option value="https://pcmanagerplus.github.io/media.web/%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.wav">デフォルト音声</option>
+        <!-- Add other options as needed -->
+    </select>
+    <button id="previewAlarmBtn" class="btn">音声プレビュー</button>
+</div>
+<audio id="alarmSound" src="https://github.com/PCManagerplus/media.web/raw/main/%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.wav" loop></audio>
+
+<script>
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerHoursInput = document.getElementById('timerHours');
+    const timerMinutesInput = document.getElementById('timerMinutes');
+    const timerSecondsInput = document.getElementById('timerSeconds');
+    const setTimerBtn = document.getElementById('setTimerBtn');
+    const startTimerBtn = document.getElementById('startTimerBtn');
+    const stopTimerBtn = document.getElementById('stopTimerBtn');
+    const stopAlarmBtn = document.getElementById('stopAlarmBtn');
+    const alarmSelect = document.getElementById('alarmSelect');
+    const previewAlarmBtn = document.getElementById('previewAlarmBtn');
+    const alarmSound = document.getElementById('alarmSound');
+
+    let timerInterval;
+    let timerSeconds = 0;
+    let timerRunning = false;
+
+    function formatTimerTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainingSeconds = seconds % 60;
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+    }
+
+    setTimerBtn.addEventListener('click', () => {
+        const hours = parseInt(timerHoursInput.value);
+        const minutes = parseInt(timerMinutesInput.value);
+        const seconds = parseInt(timerSecondsInput.value);
+        const totalSeconds = (hours || 0) * 3600 + (minutes || 0) * 60 + (seconds || 0);
+        
+        if (totalSeconds === 0) {
+            alert('時間を入力してください。');
+            return;
+        }
+
+        timerSeconds = totalSeconds;
+        timerDisplay.textContent = `タイマー: ${formatTimerTime(timerSeconds)}`;
+        startTimerBtn.disabled = false;
+        stopTimerBtn.disabled = false;
+    });
+
+    startTimerBtn.addEventListener('click', () => {
+        if (timerRunning) return;
+        
+        timerInterval = setInterval(() => {
+            timerSeconds--;
+            timerDisplay.textContent = `タイマー: ${formatTimerTime(timerSeconds)}`;
+            if (timerSeconds === 0) {
+                clearInterval(timerInterval);
+                alarmSound.play();
+                stopAlarmBtn.style.display = 'inline-block';
+                timerRunning = false;
+                startTimerBtn.disabled = true;
+                stopTimerBtn.disabled = true;
+            }
+        }, 1000);
+        timerRunning = true;
+    });
+
+    stopTimerBtn.addEventListener('click', () => {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
+    });
+
+    stopAlarmBtn.addEventListener('click', () => {
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
+        stopAlarmBtn.style.display = 'none';
+    });
+
+    alarmSelect.addEventListener('change', () => {
+        alarmSound.src = alarmSelect.value;
+    });
+
+    previewAlarmBtn.addEventListener('click', () => {
+        alarmSound.play();
+        setTimeout(() => {
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+        }, 30000); // 30秒再生する
+    });
+</script>
+
+</body>
+</html>
