@@ -1,299 +1,258 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sou Clock</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-<style>
-  /* フォントの変更 */
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f0f0;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sou Clock</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <style>
+    /* フォントの変更 */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
 
-  /* ボタンスタイルの変更 */
-  button {
-    font-size: 1em;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #028577; /* ボタンの背景色を変更 */
-    color: #fff;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
+    /* ボタンの丸みとリップルエフェクト */
+    button {
+      font-size: 1em;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 50px; /* Android 12風に丸みを強調 */
+      background-color: #028577; /* ボタンの背景色 */
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      position: relative;
+      overflow: hidden; /* リップルエフェクトの範囲を制限 */
+    }
 
-  button:hover {
-    background-color: #005d4d; /* ホバー時の背景色を変更 */
-  }
+    /* ボタンのホバー時のアニメーション */
+    button:hover {
+      background-color: #005d4d; /* ホバー時の色 */
+      transform: scale(1.02); /* 少し拡大 */
+    }
 
-  button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
+    /* ボタンが無効のときのスタイル */
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
 
-  /* タイマーやストップウォッチの表示スタイル */
-  .clock-container {
-    font-size: 2.5em;
-    font-weight: bold;
-    transition: font-size 0.3s ease;
-    color: #333;
-    text-align: center;
-    margin-bottom: 20px;
-  }
+    /* リップルエフェクト用 */
+    .waves-effect:after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5); /* リップルの色 */
+      width: 100px;
+      height: 100px;
+      opacity: 0;
+      transform: scale(0);
+      animation: ripple 0.6s ease-out;
+      pointer-events: none;
+    }
 
-  .clock-container:hover {
-    font-size: 3em;
-  }
+    /* アニメーションのキーフレーム */
+    @keyframes ripple {
+      to {
+        opacity: 0;
+        transform: scale(2);
+      }
+    }
 
-  .timer-display,
-  .stopwatch-display {
-    font-size: 1.6em;
-    margin-top: 10px;
-    transition: font-size 0.3s ease;
-    color: #666;
-  }
+    /* クリック時のリップルエフェクト */
+    .waves-effect:active:after {
+      opacity: 1;
+      animation: ripple 0.6s ease-out;
+    }
 
-  .timer-display:hover,
-  .stopwatch-display:hover {
-    font-size: 1.8em;
-  }
+    /* タイマーやストップウォッチの表示スタイル */
+    .clock-container {
+      font-size: 2.5em;
+      font-weight: bold;
+      transition: font-size 0.3s ease;
+      color: #333;
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-  .controls {
-    margin-top: 20px;
-    text-align: center;
-  }
+    .clock-container:hover {
+      font-size: 3em;
+    }
 
-  .time-input {
-    width: 50px;
-    text-align: center;
-    margin-right: 10px;
-    font-size: 1.2em;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 5px;
-  }
+    .timer-display,
+    .stopwatch-display {
+      font-size: 1.6em;
+      margin-top: 10px;
+      transition: font-size 0.3s ease;
+      color: #666;
+    }
 
-  .time-input:focus {
-    outline: none;
-    border-color: #66afe9;
-  }
+    .timer-display:hover,
+    .stopwatch-display:hover {
+      font-size: 1.8em;
+    }
 
-  /* Materialize CSSの波アニメーションの速度調整 */
-  .waves-effect {
-    transition-duration: 0.3s;
-  }
+    .controls {
+      margin-top: 20px;
+      text-align: center;
+    }
 
-  /* ポップアップのスタイル */
-  .popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-  }
+    .time-input {
+      width: 50px;
+      text-align: center;
+      margin-right: 10px;
+      font-size: 1.2em;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 5px;
+    }
 
-  .popup-content {
-    text-align: center;
-  }
-</style>
+    .time-input:focus {
+      outline: none;
+      border-color: #66afe9;
+    }
+
+    /* Materialize CSSの波アニメーションの速度調整 */
+    .waves-effect {
+      transition-duration: 0.3s;
+    }
+
+    /* ポップアップのスタイル */
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .popup-content {
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-<div id="clock" class="clock-container">
-  <div class="time"></div>
-  <div class="date"></div>
-</div>
-<div class="timer-display" id="timerDisplay">タイマー: 00:00:00</div>
-<div class="controls">
-  <input type="number" id="timerHours" class="time-input" min="0" placeholder="時">
-  <input type="number" id="timerMinutes" class="time-input" min="0" max="59" placeholder="分">
-  <input type="number" id="timerSeconds" class="time-input" min="0" max="59" placeholder="秒">
-  <button id="setTimerBtn" class="btn waves-effect waves-light">タイマー設定</button>
-  <button id="startTimerBtn" class="btn waves-effect waves-light" disabled>タイマー開始</button>
-  <button id="stopTimerBtn" class="btn waves-effect waves-light" disabled>タイマー停止</button>
-  <button id="stopAlarmBtn" class="btn waves-effect waves-light" style="display: none;">アラーム停止</button>
-</div>
-<div class="stopwatch-display" id="stopwatchDisplay">ストップウォッチ: 00:00:00.00</div>
-<div class="controls">
-  <button id="startStopwatchBtn" class="btn waves-effect waves-light">ストップウォッチ開始</button>
-  <button id="stopStopwatchBtn" class="btn waves-effect waves-light">ストップウォッチ停止</button>
-  <button id="resetStopwatchBtn" class="btn waves-effect waves-light">ストップウォッチリセット</button>
-</div>
-<div class="controls">
-  <select id="alarmSelect" class="browser-default">
-    <option value="https://pcmanagerplus.github.io/media.web/%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.wav">デフォルト音声</option>
-    <option value="https://pcmanagerplus.github.io/media.web/Google/Apps/Clock/Sounds/g12.mp3">Google旧</option>
-    <option value="https://pcmanagerplus.github.io/media.web/Google/Apps/Clock/Sounds/%E6%96%B0%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.mp3">Google新</option>
-    <option value="https://pcmanagerplus.github.io/media.web/line/crob/o_alarm_01.mp3">Line1</option>
-    <option value="https://pcmanagerplus.github.io/media.web/line/crob/o_alarm_02.mp3">Line2</option>
-    <option value="https://pcmanagerplus.github.io/media.web/line/crob/o_alarm_03.mp3">Line3</option>
-    <option value="https://pcmanagerplus.github.io/media.web/Sony%20Mobile/Sound/Timer/Sony%20Mobile_Sound_Timer_%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.mp3">Xperia タイマー</option>
-    <option value="https://pcmanagerplus.github.io/media.web/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%82%A6%E3%82%A8%E3%82%B9%E3%83%88%E3%83%9F%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC-%E9%95%B7%E3%81%84.mp3">学校のチャイム(標準)</option>
-    <option value="https://pcmanagerplus.github.io/media.web/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%82%A6%E3%82%A8%E3%82%B9%E3%83%88%E3%83%9F%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC-%E7%9F%AD%E3%81%84.mp3">学校のチャイム(短い)</option>
-    <option value="https://pcmanagerplus.github.io/media.web/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%82%A2%E3%83%9E%E3%83%AA%E3%83%AA%E3%82%B9.mp3">アマリリス</option>
-    <option value="https://pcmanagerplus.github.io/media.web/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E5%B3%A0%E3%81%AE%E6%88%91%E3%81%8C%E5%AE%B6.mp3">峠の我が家</option>
-    <option value="https://pcmanagerplus.github.io/media.web/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%82%A2%E3%83%8B%E3%83%BC%E3%83%AD%E3%83%BC%E3%83%AA%E3%83%BC.mp3">アニーローリー</option>
-    <option value="https://pcmanagerplus.github.io/media.web/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%81%BB%E3%81%9F%E3%82%8B%E3%81%AE%E5%85%89.mp3">蛍の光</option>
-    <option value="no.file.mp3">今後、追加予定</option>
-  </select>
-  <button id="previewAlarmBtn" class="btn waves-effect waves-light">音声プレビュー</button>
-</div>
-<audio id="alarmSound" src="https://github.com/PCManagerplus/media.web/raw/main/%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.wav" loop></audio>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-<script>
-  const clockContainer = document.querySelector('.clock-container');
-  const timerHoursInput = document.getElementById('timerHours');
-  const timerMinutesInput = document.getElementById('timerMinutes');
-  const timerSecondsInput = document.getElementById('timerSeconds');
-  const setTimerBtn = document.getElementById('setTimerBtn');
-  const startTimerBtn = document.getElementById('startTimerBtn');
-  const stopTimerBtn = document.getElementById('stopTimerBtn');
-  const stopAlarmBtn = document.getElementById('stopAlarmBtn');
-  const timerDisplay = document.getElementById('timerDisplay');
-  const stopwatchDisplay = document.getElementById('stopwatchDisplay');
-  const startStopwatchBtn = document.getElementById('startStopwatchBtn');
-  const stopStopwatchBtn = document.getElementById('stopStopwatchBtn');
-  const resetStopwatchBtn = document.getElementById('resetStopwatchBtn');
-  const alarmSelect = document.getElementById('alarmSelect');
-  const previewAlarmBtn = document.getElementById('previewAlarmBtn');
-  const alarmSound = document.getElementById('alarmSound');
+  <div id="clock" class="clock-container">
+    <div class="time"></div>
+    <div class="date"></div>
+  </div>
+  <div class="timer-display" id="timerDisplay">タイマー: 00:00:00</div>
+  <div class="controls">
+    <input type="number" id="timerHours" class="time-input" min="0" placeholder="時">
+    <input type="number" id="timerMinutes" class="time-input" min="0" max="59" placeholder="分">
+    <input type="number" id="timerSeconds" class="time-input" min="0" max="59" placeholder="秒">
+    <button id="setTimerBtn" class="btn waves-effect waves-light">タイマー設定</button>
+    <button id="startTimerBtn" class="btn waves-effect waves-light" disabled>タイマー開始</button>
+    <button id="stopTimerBtn" class="btn waves-effect waves-light" disabled>タイマー停止</button>
+    <button id="stopAlarmBtn" class="btn waves-effect waves-light" style="display: none;">アラーム停止</button>
+  </div>
+  <div class="stopwatch-display" id="stopwatchDisplay">ストップウォッチ: 00:00:00.00</div>
+  <div class="controls">
+    <button id="startStopwatchBtn" class="btn waves-effect waves-light">ストップウォッチ開始</button>
+    <button id="stopStopwatchBtn" class="btn waves-effect waves-light">ストップウォッチ停止</button>
+    <button id="resetStopwatchBtn" class="btn waves-effect waves-light">ストップウォッチリセット</button>
+  </div>
+  <div class="controls">
+    <select id="alarmSelect" class="browser-default">
+      <option value="https://pcmanagerplus.github.io/media.web/%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.wav">デフォルト音声</option>
+      <option value="https://pcmanagerplus.github.io/media.web/Google/Apps/Clock/Sounds/g12.mp3">Google旧</option>
+      <option value="https://pcmanagerplus.github.io/media.web/Google/Apps/Clock/Sounds/%E6%96%B0%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.mp3">Google新</option>
+      <option value="https://pcmanagerplus.github.io/media.web/line/crob/o_alarm_01.mp3">Line1</option>
+      <option value="https://pcmanagerplus.github.io/media.web/line/crob/o_alarm_02.mp3">Line2</option>
+      <option value="https://pcmanagerplus.github.io/media.web/line/crob/o_alarm_03.mp3">Line3</option>
+      <option value="https://pcmanagerplus.github.io/media.web/Sony%20Mobile/Sound/Timer/Sony%20Mobile_Sound_Timer_%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.mp3">Xperia タイマー</option>
+      <option value="https://pcmanagerplus.github.io/media.web/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%82%A6%E3%82%A8%E3%82%B9%E3%83%88%E3%83%9F%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC-%E9%95%B7%E3%81%84.mp3">学校のチャイム(標準)</option>
+      <option value="https://pcmanagerplus.github.io/media.web/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%82%A6%E3%82%A8%E3%82%B9%E3%83%88%E3%83%9F%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC-%E7%9F%AD%E3%81%84.mp3">学校のチャイム(短い)</option>
+      <option value="https://pcmanagerplus.github.io/media.web/%E3%83%81%E3%83%A3%E3%82%A4%E3%83%A0/%E3%82%A2%E3%83%9E%E3%83%AA%E3%83%AA%E3%82%B9.mp3">アマリリス</option>
+    </select>
+  </div>
 
-  let timerInterval;
-  let timerSeconds = 0;
-  let timerRunning = false;
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var timerHoursInput = document.getElementById('timerHours');
+      var timerMinutesInput = document.getElementById('timerMinutes');
+      var timerSecondsInput = document.getElementById('timerSeconds');
+      var setTimerBtn = document.getElementById('setTimerBtn');
+      var startTimerBtn = document.getElementById('startTimerBtn');
+      var stopTimerBtn = document.getElementById('stopTimerBtn');
+      var stopAlarmBtn = document.getElementById('stopAlarmBtn');
+      var timerDisplay = document.getElementById('timerDisplay');
+      var alarmSelect = document.getElementById('alarmSelect');
+      var alarmSound = new Audio(alarmSelect.value);
+      var timerInterval;
+      var totalTimeInSeconds = 0;
+      var timeRemainingInSeconds = 0;
+      var timerRunning = false;
 
-  let stopwatchInterval;
-  let stopwatchMilliseconds = 0;
-  let stopwatchRunning = false;
+      setTimerBtn.addEventListener('click', function() {
+        var hours = parseInt(timerHoursInput.value) || 0;
+        var minutes = parseInt(timerMinutesInput.value) || 0;
+        var seconds = parseInt(timerSecondsInput.value) || 0;
 
-  function formatTimerTime(seconds) {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
-  }
+        totalTimeInSeconds = hours * 3600 + minutes * 60 + seconds;
+        timeRemainingInSeconds = totalTimeInSeconds;
 
-  function formatStopwatchTime(milliseconds) {
-    const minutes = Math.floor(milliseconds / (60 * 100));
-    const seconds = Math.floor((milliseconds % (60 * 100)) / 100);
-    const centiseconds = milliseconds % 100;
-    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`;
-  }
+        if (totalTimeInSeconds > 0) {
+          startTimerBtn.disabled = false;
+        }
+      });
 
-  setTimerBtn.addEventListener('click', () => {
-    const hours = parseInt(timerHoursInput.value);
-    const minutes = parseInt(timerMinutesInput.value);
-    const seconds = parseInt(timerSecondsInput.value);
-    if (isNaN(hours) || isNaN(minutes) || isNaN(seconds) || hours < 0 || minutes < 0 || seconds < 0) {
-      alert('正しい時間を入力してください。');
-      return;
-    }
-    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-    if (totalSeconds === 0) {
-      alert('時間を入力してください。');
-      return;
-    }
-    timerSeconds = totalSeconds;
-    timerDisplay.textContent = `タイマー: ${formatTimerTime(timerSeconds)}`;
-    startTimerBtn.disabled = false;
-    stopTimerBtn.disabled = false;
-  });
+      startTimerBtn.addEventListener('click', function() {
+        if (timerRunning) {
+          return;
+        }
+        timerRunning = true;
 
-  startTimerBtn.addEventListener('click', () => {
-    if (timerRunning) {
-      return;
-    }
-    timerInterval = setInterval(() => {
-      timerSeconds--;
-      timerDisplay.textContent = `タイマー: ${formatTimerTime(timerSeconds)}`;
-      if (timerSeconds === 0) {
-        clearInterval(timerInterval);
-        alarmSound.play();
-        stopAlarmBtn.style.display = 'inline-block';
-        timerRunning = false;
+        timerInterval = setInterval(function() {
+          timeRemainingInSeconds--;
+
+          var hours = Math.floor(timeRemainingInSeconds / 3600);
+          var minutes = Math.floor((timeRemainingInSeconds % 3600) / 60);
+          var seconds = timeRemainingInSeconds % 60;
+
+          timerDisplay.textContent = 'タイマー: ' + String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+
+          if (timeRemainingInSeconds <= 0) {
+            clearInterval(timerInterval);
+            alarmSound.play();
+            stopAlarmBtn.style.display = 'inline-block';
+          }
+        }, 1000);
+
         startTimerBtn.disabled = true;
+        stopTimerBtn.disabled = false;
+      });
+
+      stopTimerBtn.addEventListener('click', function() {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        startTimerBtn.disabled = false;
         stopTimerBtn.disabled = true;
-      }
-    }, 1000);
-    timerRunning = true;
-  });
+        timerDisplay.textContent = 'タイマー: 00:00:00';
+      });
 
-  stopTimerBtn.addEventListener('click', () => {
-    clearInterval(timerInterval);
-    timerRunning = false;
-    alarmSound.pause();
-    alarmSound.currentTime = 0;
-  });
+      stopAlarmBtn.addEventListener('click', function() {
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
+        stopAlarmBtn.style.display = 'none';
+      });
 
-  stopAlarmBtn.addEventListener('click', () => {
-    alarmSound.pause();
-    alarmSound.currentTime = 0;
-    stopAlarmBtn.style.display = 'none';
-  });
-
-  startStopwatchBtn.addEventListener('click', () => {
-    if (stopwatchRunning) {
-      clearInterval(stopwatchInterval);
-    }
-    stopwatchInterval = setInterval(() => {
-      stopwatchMilliseconds++;
-      stopwatchDisplay.textContent = `ストップウォッチ: ${formatStopwatchTime(stopwatchMilliseconds)}`;
-    }, 10);
-    stopwatchRunning = true;
-  });
-
-  stopStopwatchBtn.addEventListener('click', () => {
-    clearInterval(stopwatchInterval);
-    stopwatchRunning = false;
-  });
-
-  resetStopwatchBtn.addEventListener('click', () => {
-    clearInterval(stopwatchInterval);
-    stopwatchRunning = false;
-    stopwatchMilliseconds = 0;
-    stopwatchDisplay.textContent = 'ストップウォッチ: 00:00:00.00';
-  });
-
-  alarmSelect.addEventListener('change', () => {
-    const selectedAlarm = alarmSelect.value;
-    alarmSound.src = selectedAlarm;
-  });
-
-  previewAlarmBtn.addEventListener('click', () => {
-    const selectedAlarm = alarmSelect.value;
-    alarmSound.src = selectedAlarm;
-    alarmSound.play();
-    setTimeout(() => {
-      alarmSound.pause();
-      alarmSound.currentTime = 0;
-    }, 30000); // 30秒再生する
-  });
-
-  function updateClock() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    const timeString = `${hours}:${minutes}:${seconds}`;
-    clockContainer.querySelector('.time').textContent = timeString;
-
-    const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    const dateString = now.toLocaleDateString('ja-JP', dateOptions);
-    clockContainer.querySelector('.date').textContent = dateString;
-  }
-
-  setInterval(updateClock, 1000);
-</script>
+      alarmSelect.addEventListener('change', function() {
+        alarmSound.src = alarmSelect.value;
+      });
+    });
+  </script>
 </body>
 </html>
