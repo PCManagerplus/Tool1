@@ -33,31 +33,27 @@
       overflow: hidden; /* リップルエフェクトの範囲を制限 */
     }
 
-    /* ボタンのホバー時のアニメーション */
-    button:hover {
-      background-color: #005d4d; /* ホバー時の色 */
-      transform: scale(1.02); /* 少し拡大 */
-    }
+/* ボタンスタイルの変更 */
+button {
+  font-size: 1em;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 50px; /* 角を丸くする */
+  background-color: #028577; /* ボタンの背景色を変更 */
+  color: #fff;
+  cursor: pointer;
+  overflow: hidden; /* リップルエフェクトのため */
+  transition: background-color 0.3s ease;
+}
 
-    /* ボタンが無効のときのスタイル */
-    button:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
+button:hover {
+  background-color: #005d4d; /* ホバー時の背景色を変更 */
+}
 
-    /* リップルエフェクト用 */
-    .waves-effect:after {
-      content: '';
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.5); /* リップルの色 */
-      width: 100px;
-      height: 100px;
-      opacity: 0;
-      transform: scale(0);
-      animation: ripple 0.6s ease-out;
-      pointer-events: none;
-    }
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
 
     /* アニメーションのキーフレーム */
     @keyframes ripple {
@@ -152,20 +148,20 @@
     <input type="number" id="timerHours" class="time-input" min="0" placeholder="時">
     <input type="number" id="timerMinutes" class="time-input" min="0" max="59" placeholder="分">
     <input type="number" id="timerSeconds" class="time-input" min="0" max="59" placeholder="秒">
-    <button id="setTimerBtn" class="btn waves-effect waves-light">タイマー設定</button>
-    <button id="startTimerBtn" class="btn waves-effect waves-light" disabled>タイマー開始</button>
-    <button id="stopTimerBtn" class="btn waves-effect waves-light" disabled>タイマー停止</button>
-    <button id="stopAlarmBtn" class="btn waves-effect waves-light" style="display: none;">アラーム停止</button>
+    <button id="setTimerBtn" class="btn waves-effect waves-light waves-circle">タイマー設定</button>
+    <button id="startTimerBtn" class="btn waves-effect waves-light waves-circle" disabled>タイマー開始</button>
+    <button id="stopTimerBtn" class="btn waves-effect waves-light waves-circle" disabled>タイマー停止</button>
+    <button id="stopAlarmBtn" class="btn waves-effect waves-light waves-circle" style="display: none;">アラーム停止</button>
   </div>
   <div class="stopwatch-display" id="stopwatchDisplay">ストップウォッチ: 00:00:00.00</div>
   <div class="controls">
-    <button id="startStopwatchBtn" class="btn waves-effect waves-light">ストップウォッチ開始</button>
-    <button id="stopStopwatchBtn" class="btn waves-effect waves-light">ストップウォッチ停止</button>
-    <button id="resetStopwatchBtn" class="btn waves-effect waves-light">ストップウォッチリセット</button>
+    <button id="startStopwatchBtn" class="btn waves-effect waves-light waves-circle">ストップウォッチ開始</button>
+    <button id="stopStopwatchBtn" class="btn waves-effect waves-light waves-circle">ストップウォッチ停止</button>
+    <button id="resetStopwatchBtn" class="btn waves-effect waves-light waves-circle">ストップウォッチリセット</button>
   </div>
   <div class="controls">
     <select id="alarmSelect" class="browser-default">
-      <option value="https://pcmanagerplus.github.io/media.web/%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.wav">デフォルト音声</option>
+     <button id="previewAlarmBtn" class="btn waves-effect waves-light waves-circle">音声プレビュー</button>
       <option value="https://pcmanagerplus.github.io/media.web/Google/Apps/Clock/Sounds/g12.mp3">Google旧</option>
       <option value="https://pcmanagerplus.github.io/media.web/Google/Apps/Clock/Sounds/%E6%96%B0%E3%82%BF%E3%82%A4%E3%83%9E%E3%83%BC.mp3">Google新</option>
       <option value="https://pcmanagerplus.github.io/media.web/line/crob/o_alarm_01.mp3">Line1</option>
